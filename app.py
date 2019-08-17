@@ -58,7 +58,8 @@ def result():
 
     device = {"typeId": "maratona", "deviceId": "d9"}
     event = "sensor"
-    eventData = json.loads(base64.b64decode(a.payload).decode("utf-8"))
+    event = client.lec.get(device, event)
+    eventData = json.loads(base64.b64decode(event.payload).decode("utf-8"))
 
     resposta = {
         "iotData": eventData,
