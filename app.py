@@ -133,10 +133,12 @@ def predict():
     # ####
     model_endpoint_url = "https://us-south.ml.cloud.ibm.com/v3/wml_instances/f872faaa-1d3b-4d8a-9cf7-1eef9672debb/deployments/3250b14b-3ec3-4c75-8165-8a0e58bed380/online"
 
-    data = client.deployments.score(model_endpoint_url, image)
+    model_result = client.deployments.score(
+        model_endpoint_url, {'values': image})
 
+    classes = ['CLEAN', 'DIRTY']
     resposta = {
-        "class": data
+        "class": classes[model_result['values'][0][1][0]]
     }
     return resposta
 
