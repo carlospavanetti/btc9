@@ -62,10 +62,10 @@ def result():
     eventData = json.loads(base64.b64decode(event.payload).decode("utf-8"))
 
     resposta = {
-        "iotData": eventData,
-        "itu": itu(eventData.temperatura, eventData.umidade_ar),
-        "volumeAgua": eventData.umidade_solo * volumeSemiesfera,
-        "fahrenheit": fahrenheitFromCelsius(eventData.temperatura)
+        "iotData": eventData["data"],
+        "itu": itu(eventData["data"]["temperatura"], eventData["data"]["umidade_ar"]),
+        "volumeAgua": eventData["data"]["umidade_solo"] * volumeSemiesfera,
+        "fahrenheit": fahrenheitFromCelsius(eventData["data"]["temperatura"])
     }
     response = app.response_class(
         response=json.dumps(resposta),
