@@ -138,7 +138,7 @@ def predict():
 
     classes = ['CLEAN', 'DIRTY']
     resposta = {
-        "class": classes[model_result['values'][0][1][0]]
+        "class": classes[model_result['values'][0][1]]
     }
     return resposta
 
