@@ -6,6 +6,7 @@ import io
 from PIL import Image
 
 import math
+import base64
 from wiotp.sdk.application import ApplicationClient
 
 app = Flask(__name__)
@@ -20,18 +21,19 @@ myConfig = {
     }
 }
 client = ApplicationClient(config=myConfig)
-eventData = None
+# eventData = None
 
 
-def sensorCallback(event):
-    eventData = json.dump(event.data)
+# def sensorCallback(event):
+#     print("Vamos")
+#     print(event)
+#     eventData = json.dump(event.data)
 
 
 client.connect()
-client.deviceEventCallback = sensorCallback
-
-client.subscribeToDeviceEvents(
-    typeId="maratona", deviceId="d9", eventId="sensor")
+# client.deviceEventCallback = sensorCallback
+# client.subscribeToDeviceEvents(
+#     typeId="maratona", deviceId="d9", eventId="sensor")
 
 
 @app.route("/", methods=['GET'])
@@ -53,6 +55,10 @@ def result():
     print(request)
 
     # Implemente sua lógica aqui e insira as respostas na variável 'resposta'
+
+    device = {"typeId": "maratona", "deviceId": "d9"}
+    event = "sensor"
+    eventData = json.loads(base64.b64decode(a.payload).decode("utf-8"))
 
     resposta = {
         "iotData": eventData,
