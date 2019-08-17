@@ -8,7 +8,7 @@ from PIL import Image
 import math
 import base64
 
-from keras.preprocessing import image as Kimage
+from watson_machine_learning_client import WatsonMachineLearningAPIClient
 from wiotp.sdk.application import ApplicationClient
 
 app = Flask(__name__)
@@ -93,32 +93,43 @@ def predict():
     image = prepare_image(image)
 
     # Faça uma requisição para o serviço Watson Machine Learning aqui e retorne a classe detectada na variável 'resposta'
-    ai_parms = {"wml_credentials": 'wml_credentials',
-                "model_endpoint_url": model_endpoint_url}
+    # Credenciais do Watson Machine Learning
+    wml_credentials = {
+        "apikey": "K9SRZk1WdW9oA_uEbSUV6IBDnYOz5RC8FTSnqB0pWiPT",
+        "iam_apikey_description": "Auto-generated for key 8d98bf3c-518d-492f-a271-d0b6b7ebd362",
+        "iam_apikey_name": "wdp-writer",
+        "iam_role_crn": "crn:v1:bluemix:public:iam::::serviceRole:Writer",
+        "iam_serviceid_crn": "crn:v1:bluemix:public:iam-identity::a/1de11f71360f42fd9ba01f2b76bced35::serviceid:ServiceId-e809b862-d7cc-4230-8f62-7c56d45935f2",
+        "instance_id": "f872faaa-1d3b-4d8a-9cf7-1eef9672debb",
+        "url": "https://us-south.ml.cloud.ibm.com"
+    }
+    client = WatsonMachineLearningAPIClient(wml_credentials)
 
-    # Load da imagem de teste e pre-processing da mesma - para entrada na rede neural convolucional
-    image = Kimage.load_img("teste2.jpg")
-    plt.imshow(image)
-    image = image.resize(size=(96, 96))
-    image = img_to_array(image)
-    image = np.array(image, dtype="float") / 255.0
-    image = np.expand_dims(image, axis=0)
-    image = image.tolist()
+    # Definição de metadados do modelo (versao de python, framework, libs e etc)
+    sample_saved_model_filename = 'model_WSTUDIO.tar.gz'
+    metadata = {
+        client.repository.ModelMetaNames.NAME: 'MY_FIRST_SUBMIT',
+        client.repository.ModelMetaNames.FRAMEWORK_NAME: 'tensorflow',
+        client.repository.ModelMetaNames.FRAMEWORK_VERSION: '1.11',
+        client.repository.ModelMetaNames.RUNTIME_NAME: 'python',
+        client.repository.ModelMetaNames.RUNTIME_VERSION: '3.6',
+        client.repository.ModelMetaNames.FRAMEWORK_LIBRARIES:  [{"name": "keras", "version": "2.2.4"}]
+    }
 
-    # Chamada da função SCORE no modelo (inference)
-    model_payload = {"values": image}
-    model_result = client.deployments.score(
-        ai_parms["model_endpoint_url"], model_payload)
-    print(model_result)
+    # Conexão com o WML
+    model_details = client.repository.store_model(
+        sample_saved_model_filename, meta_props=metadata, training_data=None)
 
-    classes = ['CLEAN', 'DIRTY']
-    print("Imagem Classificada como : ",
-          classes[model_result['values'][0][1][0]])
+    # Deploy do modelo
+    model_id = model_details["metadata"]["guid"]
+    model_deployment_details = client.deployments.create(
+        artifact_uid=model_id, name="MY FIRST SUBMIT D9 Behind The Code")
 
-    print("Probabilidades : \n\t",
-          classes[model_result['values'][0][1][0]], " : %.2f" % (
-              model_result['values'][0][0][0]*100), "%\n\t",
-          )
+    # Retrieve da URL da API para consumo da mesma
+    model_endpoint_url = client.deployments.get_scoring_url(
+        model_deployment_details)
+    print("A URL de chamada da sua API é : ", model_endpoint_url)
+    ####
 
     resposta = {
         "class": classes[model_result['values'][0][1][0]]
