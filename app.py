@@ -7,6 +7,8 @@ from PIL import Image
 
 import math
 import base64
+
+from keras.preprocessing import image as Kimage
 from wiotp.sdk.application import ApplicationClient
 
 app = Flask(__name__)
@@ -91,9 +93,35 @@ def predict():
     image = prepare_image(image)
 
     # Faça uma requisição para o serviço Watson Machine Learning aqui e retorne a classe detectada na variável 'resposta'
+    ai_parms = {"wml_credentials": 'wml_credentials',
+                "model_endpoint_url": model_endpoint_url}
+
+    # Load da imagem de teste e pre-processing da mesma - para entrada na rede neural convolucional
+    image = Kimage.load_img("teste2.jpg")
+    plt.imshow(image)
+    image = image.resize(size=(96, 96))
+    image = img_to_array(image)
+    image = np.array(image, dtype="float") / 255.0
+    image = np.expand_dims(image, axis=0)
+    image = image.tolist()
+
+    # Chamada da função SCORE no modelo (inference)
+    model_payload = {"values": image}
+    model_result = client.deployments.score(
+        ai_parms["model_endpoint_url"], model_payload)
+    print(model_result)
+
+    classes = ['CLEAN', 'DIRTY']
+    print("Imagem Classificada como : ",
+          classes[model_result['values'][0][1][0]])
+
+    print("Probabilidades : \n\t",
+          classes[model_result['values'][0][1][0]], " : %.2f" % (
+              model_result['values'][0][0][0]*100), "%\n\t",
+          )
 
     resposta = {
-        "class": "data"
+        "class": classes[model_result['values'][0][1][0]]
     }
     return resposta
 
