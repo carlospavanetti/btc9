@@ -105,34 +105,38 @@ def predict():
     }
     client = WatsonMachineLearningAPIClient(wml_credentials)
 
-    # Definição de metadados do modelo (versao de python, framework, libs e etc)
-    sample_saved_model_filename = 'model_WSTUDIO.tar.gz'
-    metadata = {
-        client.repository.ModelMetaNames.NAME: 'MY_FIRST_SUBMIT',
-        client.repository.ModelMetaNames.FRAMEWORK_NAME: 'tensorflow',
-        client.repository.ModelMetaNames.FRAMEWORK_VERSION: '1.11',
-        client.repository.ModelMetaNames.RUNTIME_NAME: 'python',
-        client.repository.ModelMetaNames.RUNTIME_VERSION: '3.6',
-        client.repository.ModelMetaNames.FRAMEWORK_LIBRARIES:  [{"name": "keras", "version": "2.2.4"}]
-    }
+    # # Definição de metadados do modelo (versao de python, framework, libs e etc)
+    # sample_saved_model_filename = 'model_WSTUDIO.tar.gz'
+    # metadata = {
+    #     client.repository.ModelMetaNames.NAME: 'MY_FIRST_SUBMIT',
+    #     client.repository.ModelMetaNames.FRAMEWORK_NAME: 'tensorflow',
+    #     client.repository.ModelMetaNames.FRAMEWORK_VERSION: '1.11',
+    #     client.repository.ModelMetaNames.RUNTIME_NAME: 'python',
+    #     client.repository.ModelMetaNames.RUNTIME_VERSION: '3.6',
+    #     client.repository.ModelMetaNames.FRAMEWORK_LIBRARIES:  [{"name": "keras", "version": "2.2.4"}]
+    # }
 
-    # Conexão com o WML
-    model_details = client.repository.store_model(
-        sample_saved_model_filename, meta_props=metadata, training_data=None)
+    # # Conexão com o WML
+    # model_details = client.repository.store_model(
+    #     sample_saved_model_filename, meta_props=metadata, training_data=None)
 
-    # Deploy do modelo
-    model_id = model_details["metadata"]["guid"]
-    model_deployment_details = client.deployments.create(
-        artifact_uid=model_id, name="MY FIRST SUBMIT D9 Behind The Code")
+    # # Deploy do modelo
+    # model_id = model_details["metadata"]["guid"]
+    # model_deployment_details = client.deployments.create(
+    #     artifact_uid=model_id, name="MY FIRST SUBMIT D9 Behind The Code")
 
-    # Retrieve da URL da API para consumo da mesma
-    model_endpoint_url = client.deployments.get_scoring_url(
-        model_deployment_details)
-    print("A URL de chamada da sua API é : ", model_endpoint_url)
-    ####
+    # # Retrieve da URL da API para consumo da mesma
+    # model_endpoint_url = client.deployments.get_scoring_url(
+    #     model_deployment_details)
+    # client.deployments.get_scoring_url()
+    # print("A URL de chamada da sua API é : ", model_endpoint_url)
+    # ####
+    model_endpoint_url = "https://us-south.ml.cloud.ibm.com/v3/wml_instances/f872faaa-1d3b-4d8a-9cf7-1eef9672debb/deployments/3250b14b-3ec3-4c75-8165-8a0e58bed380/online"
+
+    data = client.deployments.score(model_endpoint_url, image)
 
     resposta = {
-        "class": classes[model_result['values'][0][1][0]]
+        "class": data
     }
     return resposta
 
