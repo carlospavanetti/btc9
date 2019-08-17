@@ -47,7 +47,7 @@ def fahrenheitFromCelsius(celsius):
 
 
 def itu(temp, ur):
-    temp - 0.55 * (1 - ur) * (temp - 14)
+    return temp - 0.55 * (1 - ur) * (temp - 14)
 
 
 @app.route("/iot", methods=['GET'])
